@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<html>
+<head>
+<style>
+.item-news{
+    padding: 0.8em 0.5em 0.4em 0.5em;
+    border-bottom: 1px dotted blue;
+}
+</style>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js">
+</script>
+  <script language="javascript" type="text/javascript">
+    $(function() {
+      const pingTimeout = 2000
+      let socket = null;
+      let lastResponse = null;
+      let pingIntervalId = null;
+      const news = []
+      
+           
+      const ping=()=>{ //Используем для проверки соединия
+        if (lastResponse<(new Date())-3*pingTimeout) {
+            disconnect()
+        }
+        else if (socket != null) {
+            socket.send('#PING');
+        }
+      }
+      
+      const connect=()=>{
+        disconnect(); // разрываем соединение если функция вызвана по-ошибке
+        const wsUri = (window.location.protocol=='https:'&&'wss://'||'ws://')+window.location.host;
+        socket = new WebSocket(wsUri); //открываем соединение
+        socket.onopen = () => {
+            pingIntervalId = setInterval(ping, pingTimeout);
+            update_ui();
+        };
+        socket.onmessage = (e)=>{
+          console.log('Received: ' + e.data);
+          lastResponse = new Date();
+          if (e.data!="#PONG"){
+            news.push(e.data)
+            update_ui();
+          }
+        };
+        socket.onclose = ()=> {
+          socket = null;
+          update_ui();
+          if (pingIntervalId) clearInterval(pingIntervalId);
+          setTimeout(connect, pingTimeout);
+        };
+      }
+      
+      const disconnect=()=>{
+        if (socket != null) {
+          socket.close();
+          socket = null;
+          update_ui();
+        }
+      }
+      
+      const update_ui=()=>{
+        if (socket == null) {
+          $('#status').text('Server disconnected').css('color', 'red');
+          return
+        }
+        $('#status').text('Server connected').css('color', 'green');
+        const listNews = news.map(e=>{
+            return '<div class="item-news">'+e+'</div>'
+        })
+        $('#news').html(listNews.reverse().join(''))
+      }
+      
+      connect();
+      update_ui();
+    });
+</script>
+</head>
+<body>
+<span id="status"></span>
+<h3>News!</h3>
+<div id='news'>
+</div>
+
+
+</body>
+</html>
