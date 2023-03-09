@@ -23,7 +23,7 @@
       const ping=()=>{ //Используем для проверки соединия
         const checkpoint = new Date((new Date())-5*pingTimeout);
         if (lastResponse<checkpoint) {
-            console.log(lastResponse, checkpoint, new Date())
+            //console.log(lastResponse, checkpoint, new Date())
             console.log('ping timeout...')
             disconnect()
         }
