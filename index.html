@@ -21,7 +21,10 @@
       
            
       const ping=()=>{ //Используем для проверки соединия
-        if (lastResponse<(new Date())-3*pingTimeout) {
+        const checkpoint = new Date((new Date())-5*pingTimeout);
+        if (lastResponse<checkpoint) {
+            console.log(lastResponse, checkpoint, new Date())
+            console.log('ping timeout...')
             disconnect()
         }
         else if (socket != null) {
@@ -34,6 +37,7 @@
         const wsUri = (window.location.protocol=='https:'&&'wss://'||'ws://')+window.location.host;
         socket = new WebSocket(wsUri); //открываем соединение
         socket.onopen = () => {
+            lastResponse = new Date();
             pingIntervalId = setInterval(ping, pingTimeout);
             update_ui();
         };

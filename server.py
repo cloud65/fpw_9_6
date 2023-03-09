@@ -8,22 +8,23 @@ class Client: # Класс подпискиков
         self._socket = socket
         self._queue = Queue()
         self._keepalive = True
-        create_task(self.run())
+        self._task = create_task(self.run())
         
+    async def run(self):
+        while self._keepalive:
+            news = await self._queue.get()
+            await self.send(news) 
+            
     async def send(self, data):   
         await self._socket.send_str(data)
         
     async def close(self):
         self._keepalive = False
+        #self._task.cancel()
         await self._socket.close()
         
     def __eq__(self, value):
         return self._socket==value
-        
-    async def run(self):
-        while self._keepalive:
-            news = await self._queue.get()
-            await self.send(news)
     
     async def add_news(self, data):
         await self._queue.put(data)
@@ -63,8 +64,6 @@ async def wshandler(request: web.Request):
 
     await resp.prepare(request)
 
-    #await resp.send_str("Welcome!!!")
-
     try:
         print("Someone joined.")
         await request.app.clients.append(Client(resp))
@@ -84,7 +83,9 @@ async def wshandler(request: web.Request):
 
 
 async def handlerAddNews(request: web.Request):
-    text = await request.text()
+    code = request.charset or 'utf-8'
+    b_text = await request.read()
+    text = b_text.decode(code)
     print('Send news.')
     await request.app.clients.add_news(text)
     return web.Response(text="Ok")
@@ -105,4 +106,4 @@ def init():
 
 if __name__=='__main__':
     WS_FILE = 'index.html'
-    web.run_app(init())
+    web.run_app(init(), port=9000)
