@@ -83,9 +83,9 @@ async def wshandler(request: web.Request):
 
 
 async def handlerAddNews(request: web.Request):
-    code = request.charset or 'utf-8'
+    charset = request.charset or 'utf-8'
     b_text = await request.read()
-    text = b_text.decode(code)
+    text = b_text.decode(charset)
     print('Send news.')
     await request.app.clients.add_news(text)
     return web.Response(text="Ok")
@@ -106,4 +106,4 @@ def init():
 
 if __name__=='__main__':
     WS_FILE = 'index.html'
-    web.run_app(init(), port=9000)
+    web.run_app(init(), port=8080)
