@@ -9,12 +9,12 @@
 
 
 
-Проверка:
-
-windows cmd
-
+##### Проверка  POST/news:
+###### windows cmd
+```
 curl -X POST http://localhost:8080/news -H "Content-type: text/plain; charset=windows-1251" -d "Тестовое сообщение"
-
-linux
-
+```
+###### linux
+```
 curl -X POST http://localhost:8080/news -H "Content-type: text/plain; charset=utf-8" -d "Тестовое сообщение"
+```
